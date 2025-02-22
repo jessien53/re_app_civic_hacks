@@ -20,7 +20,7 @@ class ReApp extends StatelessWidget {
         useMaterial3: true,
       ),
      // home: const StartScreen(),--Original
-        home:  PrimaryScreen()
+        home:  StartScreen()
     );
   }
 }

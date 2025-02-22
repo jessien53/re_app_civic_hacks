@@ -19,7 +19,7 @@ class StartScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => const QuestionnaireScreen()),
                 );
               },
-              child: const Text('Start Questionnaire'),
+              child: const Text('Start'),
             ),
           ],
         ),
