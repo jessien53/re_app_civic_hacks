@@ -1,6 +1,8 @@
 // main.dart
 import 'package:flutter/material.dart';
 import 'screens/start_screen.dart';
+import 'screens/primary_screen.dart';
+
 
 void main() {
   runApp(const ReApp());
@@ -17,7 +19,8 @@ class ReApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
         useMaterial3: true,
       ),
-      home: const StartScreen(),
+     // home: const StartScreen(),--Original
+        home:  PrimaryScreen()
     );
   }
 }
