@@ -8,6 +8,7 @@ class QuestionnaireScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Questionnaire')),
       body: Padding(
+
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
