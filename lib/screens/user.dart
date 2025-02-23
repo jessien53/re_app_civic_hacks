@@ -12,13 +12,16 @@ class User {
     return _instance; // Ensures that only one instance of User exists
   }
 
-  // Step 4: Private constructor to prevent external instantiation
-  User._internal({this.points = 0, this.level = 0, this.pointsNeededForNextLevel = 10});
+  // Private constructor to prevent external instantiation
+  User._internal({
+    this.points = 0,
+    this.level = 1,
+    this.pointsNeededForNextLevel = 10,
+  });
 
   // Method to add points and update the user's level
   void addPoints(int newPoints) {
     points += newPoints;
-
     // Leveling system: Every `pointsNeededForNextLevel` points = Level up
     level = (points ~/ pointsNeededForNextLevel) + 1;
   }

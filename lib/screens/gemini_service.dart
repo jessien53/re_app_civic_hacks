@@ -4,7 +4,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GeminiService {
   final String _apiKey;
-  final String _baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/';
+  final String _baseUrl =
+      'https://generativelanguage.googleapis.com/v1beta/models/';
   final String _model = 'gemini-pro';
 
   GeminiService() : _apiKey = dotenv.get('GEMINI_API_KEY');
@@ -12,11 +13,10 @@ class GeminiService {
   Future<String> generateQuestion(String topic) async {
     final url = '$_baseUrl$_model:generateContent?key=$_apiKey';
 
-    final headers = {
-      'Content-Type': 'application/json',
-    };
+    final headers = {'Content-Type': 'application/json'};
 
-    final prompt = '''Generate a trivia question about $topic with 4 multiple choice options and the correct answer. 
+    final prompt =
+        '''Generate a trivia question about $topic with 4 multiple choice options and the correct answer. 
     Format the response EXACTLY like this example, including the curly braces:
     {
       "question": "Which of these is a common reusable alternative to plastic bags?",
@@ -28,30 +28,29 @@ class GeminiService {
       "contents": [
         {
           "parts": [
-            {
-              "text": prompt
-            }
-          ]
-        }
+            {"text": prompt},
+          ],
+        },
       ],
       "generationConfig": {
         "temperature": 0.7,
         "topK": 40,
         "topP": 0.8,
         "maxOutputTokens": 1024,
-      }
+      },
     });
 
     try {
       final response = await http.post(
-          Uri.parse(url),
-          headers: headers,
-          body: body
+        Uri.parse(url),
+        headers: headers,
+        body: body,
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        String generatedText = data['candidates'][0]['content']['parts'][0]['text'];
+        String generatedText =
+            data['candidates'][0]['content']['parts'][0]['text'];
 
         // Clean up the response to ensure valid JSON
         generatedText = generatedText.trim();

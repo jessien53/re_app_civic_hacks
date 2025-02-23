@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'question_model.dart';
 import 'gemini_service.dart';
 import 'user.dart';
+import 'primary_screen.dart';
+
+User user = User();
 
 class ReuseScreen extends StatefulWidget {
   const ReuseScreen({Key? key}) : super(key: key);
@@ -17,11 +20,10 @@ class ReuseScreenState extends State<ReuseScreen> {
     'sustainable lifestyle',
     'eco-friendly alternatives',
     'waste reduction',
-    'environmental conservation'
+    'environmental conservation',
   ];
 
   late final GeminiService _geminiService;
-  final User _user = User();
 
   Question? _currentQuestion;
   String? _selectedAnswer;
@@ -79,7 +81,8 @@ class ReuseScreenState extends State<ReuseScreen> {
     } catch (e) {
       setState(() {
         _hasError = true;
-        _errorMessage = 'Failed to load question. Please check your connection and try again.';
+        _errorMessage =
+            'Failed to load question. Please check your connection and try again.';
         _isLoading = false;
       });
     }
@@ -93,9 +96,10 @@ class ReuseScreenState extends State<ReuseScreen> {
       if (answer == _currentQuestion!.correctAnswer) {
         _feedback = 'Correct! +1 point';
         _score++;
-        _user.addPoints(1);
+        user.addPoints(1);
       } else {
-        _feedback = 'Incorrect. The correct answer was: ${_currentQuestion!.correctAnswer}';
+        _feedback =
+            'Incorrect. The correct answer was: ${_currentQuestion!.correctAnswer}';
       }
     });
   }
@@ -112,9 +116,9 @@ class ReuseScreenState extends State<ReuseScreen> {
             children: [
               Text('Final Score: $_score out of $_maxQuestions'),
               const SizedBox(height: 10),
-              Text('Total Points: ${_user.points}'),
+              Text('Total Points: ${user.points}'),
               const SizedBox(height: 10),
-              Text('Current Level: ${_user.level}'),
+              Text('Current Level: ${user.level}'),
             ],
           ),
           actions: <Widget>[
@@ -128,8 +132,10 @@ class ReuseScreenState extends State<ReuseScreen> {
             TextButton(
               child: const Text('Exit'),
               onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop(); // Return to previous screen
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => PrimaryScreen()),
+                ); // Return to previous screen
               },
             ),
           ],
@@ -175,9 +181,7 @@ class ReuseScreenState extends State<ReuseScreen> {
 
   Widget _buildContent() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (_hasError) {
@@ -201,9 +205,7 @@ class ReuseScreenState extends State<ReuseScreen> {
     }
 
     if (_currentQuestion == null) {
-      return const Center(
-        child: Text('No question available'),
-      );
+      return const Center(child: Text('No question available'));
     }
 
     return Column(
@@ -214,28 +216,24 @@ class ReuseScreenState extends State<ReuseScreen> {
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 20),
-        Text(
-          _currentQuestion!.text,
-          style: const TextStyle(fontSize: 20),
-        ),
+        Text(_currentQuestion!.text, style: const TextStyle(fontSize: 20)),
         const SizedBox(height: 20),
-        ..._currentQuestion!.options.map((option) => Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: ElevatedButton(
-            onPressed: _selectedAnswer != null
-                ? null
-                : () => _handleAnswer(option),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _getButtonColor(option),
-            ),
-            child: Text(
-              option,
-              style: TextStyle(
-                color: _getTextColor(option),
+        ..._currentQuestion!.options.map(
+          (option) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: ElevatedButton(
+              onPressed:
+                  _selectedAnswer != null ? null : () => _handleAnswer(option),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _getButtonColor(option),
+              ),
+              child: Text(
+                option,
+                style: TextStyle(color: _getTextColor(option)),
               ),
             ),
           ),
-        )),
+        ),
         if (_feedback.isNotEmpty) ...[
           const SizedBox(height: 20),
           Text(
@@ -243,9 +241,8 @@ class ReuseScreenState extends State<ReuseScreen> {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: _feedback.startsWith('Correct')
-                  ? Colors.green
-                  : Colors.red,
+              color:
+                  _feedback.startsWith('Correct') ? Colors.green : Colors.red,
             ),
           ),
         ],
@@ -254,9 +251,7 @@ class ReuseScreenState extends State<ReuseScreen> {
           ElevatedButton(
             onPressed: _loadNextQuestion,
             child: Text(
-                _questionCount >= _maxQuestions
-                    ? 'See Results'
-                    : 'Next Question'
+              _questionCount >= _maxQuestions ? 'See Results' : 'Next Question',
             ),
           ),
       ],
