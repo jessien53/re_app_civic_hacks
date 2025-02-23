@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:re/screens/primary_screen.dart';
+import 'screens/start_screen.dart';
 
 void main() {
   // Ensure Flutter bindings are initialized
@@ -120,6 +121,6 @@ class _AppLoaderState extends State<AppLoader> {
       );
     }
 
-    return const PrimaryScreen();
+    return const StartScreen();
   }
 }

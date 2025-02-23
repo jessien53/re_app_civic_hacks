@@ -1,17 +1,58 @@
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
 import 'questionnaire_screen.dart';
 
-// TODO need to implement animation for opening app path to mp4: assets/Re.mp4
+class StartScreen extends StatefulWidget {
+  const StartScreen({Key? key}) : super(key: key);
 
-class StartScreen extends StatelessWidget {
-  const StartScreen({super.key});
+  @override
+  StartScreenState createState() => StartScreenState();
+}
+
+class StartScreenState extends State<StartScreen> {
+  late VideoPlayerController _videoPlayerController;
+  late ChewieController _chewieController;
+  bool _videoEnded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _videoPlayerController = VideoPlayerController.asset('assets/Re.mp4')
+      ..initialize().then((_) {
+        _chewieController = ChewieController(
+          videoPlayerController: _videoPlayerController,
+          autoPlay: true,
+          looping: false,
+          showControls: false,
+        );
+        _videoPlayerController.addListener(_checkVideoEnd);
+        setState(() {});
+      });
+  }
+
+  void _checkVideoEnd() {
+    if (_videoPlayerController.value.position >= _videoPlayerController.value.duration) {
+      setState(() {
+        _videoEnded = true;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _videoPlayerController.removeListener(_checkVideoEnd);
+    _videoPlayerController.dispose();
+    _chewieController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Welcome to Re')),
       body: Center(
-        child: Column(
+        child: _videoEnded
+            ? Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
@@ -23,10 +64,13 @@ class StartScreen extends StatelessWidget {
                   ),
                 );
               },
-              child: const Text('Start'),
+              child: const Text('Continue'),
             ),
           ],
-        ),
+        )
+            : _videoPlayerController.value.isInitialized
+            ? Chewie(controller: _chewieController)
+            : const CircularProgressIndicator(),
       ),
     );
   }
