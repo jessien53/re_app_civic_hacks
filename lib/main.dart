@@ -1,7 +1,8 @@
 // main.dart
 import 'package:flutter/material.dart';
+import 'package:re/screens/primary_screen.dart';
 import 'screens/start_screen.dart';
-import 'screens/primary_screen.dart';
+//import 'screens/primary_screen.dart';
 
 
 void main() {

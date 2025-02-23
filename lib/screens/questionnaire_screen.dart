@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'user.dart';
+import 'primary_screen.dart';
+
+User user = User();
 
 class QuestionnaireScreen extends StatefulWidget {
   const QuestionnaireScreen({super.key});
@@ -23,16 +27,14 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
 
   final Map<int, String> answers = {};
 
-  int calculateScore() {
-    int score = 0;
+  void calculateScore() {
     answers.forEach((index, value) {
       if (value == 'Sometimes') {
-        score += 1;
+        user.addPoints(1);
       } else if (value == 'Always') {
-        score += 2;
+        user.addPoints(2);
       }
     });
-    return score;
   }
 
   @override
@@ -40,7 +42,6 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Questionnaire')),
       body: Padding(
-
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
@@ -97,7 +98,8 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
             ),
             ElevatedButton(
               onPressed: () {
-                int finalScore = calculateScore();
+                calculateScore();
+                int finalScore = user.points;
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
@@ -105,7 +107,13 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
                     content: Text('You have earned $finalScore points!'),
                     actions: [
                       TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => PrimaryScreen()),
+                          );
+                        },
                         child: const Text('OK'),
                       ),
                     ],
