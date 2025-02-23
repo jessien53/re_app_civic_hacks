@@ -3,13 +3,13 @@ class User {
 
   int points;
   int level;
-  int pointsNeededForNextLevel=10;
+  int pointsNeededForNextLevel;
 
   factory User() {
     return _instance;
   }
 
-  User._internal({this.points = 0, this.level = 0});
+  User._internal({this.points = 0, this.level = 0, this.pointsNeededForNextLevel=10});
 
   void addPoints(int newPoints) {
     points += newPoints;
