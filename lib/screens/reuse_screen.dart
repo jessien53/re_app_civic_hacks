@@ -82,7 +82,7 @@ class ReuseScreenState extends State<ReuseScreen> {
       setState(() {
         _hasError = true;
         _errorMessage =
-            'Failed to load question. Please check your connection and try again.';
+        'Failed to load question. Please check your connection and try again.';
         _isLoading = false;
       });
     }
@@ -99,7 +99,7 @@ class ReuseScreenState extends State<ReuseScreen> {
         user.addPoints(1);
       } else {
         _feedback =
-            'Incorrect. The correct answer was: ${_currentQuestion!.correctAnswer}';
+        'Incorrect. The correct answer was: ${_currentQuestion!.correctAnswer}';
       }
     });
   }
@@ -218,12 +218,13 @@ class ReuseScreenState extends State<ReuseScreen> {
         const SizedBox(height: 20),
         Text(_currentQuestion!.text, style: const TextStyle(fontSize: 20)),
         const SizedBox(height: 20),
+        // Display options (either multiple choice or Yes/No)
         ..._currentQuestion!.options.map(
-          (option) => Padding(
+              (option) => Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: ElevatedButton(
               onPressed:
-                  _selectedAnswer != null ? null : () => _handleAnswer(option),
+              _selectedAnswer != null ? null : () => _handleAnswer(option),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _getButtonColor(option),
               ),
@@ -242,7 +243,7 @@ class ReuseScreenState extends State<ReuseScreen> {
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color:
-                  _feedback.startsWith('Correct') ? Colors.green : Colors.red,
+              _feedback.startsWith('Correct') ? Colors.green : Colors.red,
             ),
           ),
         ],

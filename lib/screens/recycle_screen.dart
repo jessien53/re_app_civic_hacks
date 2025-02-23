@@ -59,18 +59,24 @@ class RecycleScreenState extends State<RecycleScreen> {
     try {
       // Get a random topic
       final topic = _topics[_questionCount % _topics.length];
-      final response = await _geminiService.generateQuestion(topic);
+      final response = await _geminiService.generateQuestion(topic, isYesNo: true);
 
       // Parse the response and handle potential JSON errors
       try {
         final questionJson = jsonDecode(response);
-        final newQuestion = Question.fromJson(questionJson);
 
-        setState(() {
-          _currentQuestion = newQuestion;
-          _isLoading = false;
-          _questionCount++;
-        });
+        // Ensure the response contains the necessary fields for Question
+        if (questionJson.containsKey('question') && questionJson.containsKey('options')) {
+          final newQuestion = Question.fromJson(questionJson);
+
+          setState(() {
+            _currentQuestion = newQuestion;
+            _isLoading = false;
+            _questionCount++;
+          });
+        } else {
+          throw FormatException("Invalid question format received.");
+        }
       } catch (e) {
         setState(() {
           _hasError = true;
@@ -82,7 +88,7 @@ class RecycleScreenState extends State<RecycleScreen> {
       setState(() {
         _hasError = true;
         _errorMessage =
-            'Failed to load question. Please check your connection and try again.';
+        'Failed to load question. Please check your connection and try again.';
         _isLoading = false;
       });
     }
@@ -99,7 +105,7 @@ class RecycleScreenState extends State<RecycleScreen> {
         user.addPoints(1);
       } else {
         _feedback =
-            'Incorrect. The correct answer was: ${_currentQuestion!.correctAnswer}';
+        'Incorrect. The correct answer was: ${_currentQuestion!.correctAnswer}';
       }
     });
   }
@@ -219,11 +225,11 @@ class RecycleScreenState extends State<RecycleScreen> {
         Text(_currentQuestion!.text, style: const TextStyle(fontSize: 20)),
         const SizedBox(height: 20),
         ..._currentQuestion!.options.take(2).map(
-          (option) => Padding(
+              (option) => Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
             child: ElevatedButton(
               onPressed:
-                  _selectedAnswer != null ? null : () => _handleAnswer(option),
+              _selectedAnswer != null ? null : () => _handleAnswer(option),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _getButtonColor(option),
               ),
@@ -242,7 +248,7 @@ class RecycleScreenState extends State<RecycleScreen> {
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color:
-                  _feedback.startsWith('Correct') ? Colors.green : Colors.red,
+              _feedback.startsWith('Correct') ? Colors.green : Colors.red,
             ),
           ),
         ],

@@ -10,19 +10,32 @@ class GeminiService {
 
   GeminiService() : _apiKey = dotenv.get('GEMINI_API_KEY');
 
-  Future<String> generateQuestion(String topic) async {
+  Future<String> generateQuestion(String topic, {bool isYesNo = false}) async {
     final url = '$_baseUrl$_model:generateContent?key=$_apiKey';
 
     final headers = {'Content-Type': 'application/json'};
 
-    final prompt =
-        '''Generate a trivia question about $topic with 4 multiple choice options and the correct answer. 
+    // Define the prompts for reuse and recycle questions
+    final reuse_prompt =
+    '''Generate a trivia question about $topic with 4 multiple choice options and the correct answer. 
     Format the response EXACTLY like this example, including the curly braces:
     {
       "question": "Which of these is a common reusable alternative to plastic bags?",
       "options": ["Canvas tote bag", "Paper airplane", "Plastic wrapper", "Disposable container"],
       "correctAnswer": "Canvas tote bag"
     }''';
+
+    final recycle_prompt =
+    '''Generate a trivia question about $topic with 2 options for a Yes/No or True/False question, and the correct answer. 
+    Format the response EXACTLY like this example, including the curly braces:
+    {
+      "question": "Is recycling paper better for the environment than throwing it away?",
+      "options": ["Yes", "No"],
+      "correctAnswer": "Yes"
+    }''';
+
+    // Choose the appropriate prompt
+    final prompt = isYesNo ? recycle_prompt : reuse_prompt;
 
     final body = jsonEncode({
       "contents": [
@@ -50,7 +63,7 @@ class GeminiService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         String generatedText =
-            data['candidates'][0]['content']['parts'][0]['text'];
+        data['candidates'][0]['content']['parts'][0]['text'];
 
         // Clean up the response to ensure valid JSON
         generatedText = generatedText.trim();
