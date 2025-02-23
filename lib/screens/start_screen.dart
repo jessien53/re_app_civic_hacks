@@ -15,6 +15,9 @@ class StartScreenState extends State<StartScreen> {
   late ChewieController _chewieController;
   bool _videoEnded = false;
 
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -50,12 +53,57 @@ class StartScreenState extends State<StartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF778866), // Earth-tone background
       body: Center(
         child: _videoEnded
             ? Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Sign-in area
+            Container(
+              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8DECE),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 6,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  const Text(
+                    "Sign On",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: emailController,
+                    decoration: const InputDecoration(labelText: "Email"),
+                  ),
+                  TextField(
+                    controller: passwordController,
+                    decoration: const InputDecoration(labelText: "Password"),
+                    obscureText: true,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Continue button
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF556B2F),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              ),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -64,7 +112,7 @@ class StartScreenState extends State<StartScreen> {
                   ),
                 );
               },
-              child: const Text('Continue'),
+              child: const Text('Continue', style: TextStyle(fontSize: 18, color: Colors.white)),
             ),
           ],
         )

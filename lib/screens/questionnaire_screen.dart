@@ -40,7 +40,11 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Questionnaire')),
+      backgroundColor: const Color(0xFFE8DECE), // Light earth tone background
+      appBar: AppBar(
+        title: const Text('Questionnaire'),
+        backgroundColor: const Color(0xFF556B2F), // Earth-tone app bar
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -49,60 +53,52 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
               child: ListView.builder(
                 itemCount: questions.length,
                 itemBuilder: (context, index) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        questions[index],
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      Row(
+                  return Card(
+                    color: const Color(0xFFD4C8A8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Radio(
-                            value: 'Never',
-                            groupValue: answers[index],
-                            onChanged: (value) {
-                              setState(() {
-                                answers[index] = value.toString();
-                              });
-                            },
+                          Text(
+                            questions[index],
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                           ),
-                          const Text('Never'),
-                          Radio(
-                            value: 'Sometimes',
-                            groupValue: answers[index],
-                            onChanged: (value) {
-                              setState(() {
-                                answers[index] = value.toString();
-                              });
-                            },
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              _buildOptionButton(index, 'Never'),
+                              _buildOptionButton(index, 'Sometimes'),
+                              _buildOptionButton(index, 'Always'),
+                            ],
                           ),
-                          const Text('Sometimes'),
-                          Radio(
-                            value: 'Always',
-                            groupValue: answers[index],
-                            onChanged: (value) {
-                              setState(() {
-                                answers[index] = value.toString();
-                              });
-                            },
-                          ),
-                          const Text('Always'),
                         ],
                       ),
-                      const SizedBox(height: 10),
-                    ],
+                    ),
                   );
                 },
               ),
             ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF556B2F),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              ),
               onPressed: () {
                 calculateScore();
                 int finalScore = user.points;
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(
+                    backgroundColor: const Color(0xFFD4C8A8),
                     title: const Text('Your Score'),
                     content: Text('You have earned $finalScore points!'),
                     actions: [
@@ -120,11 +116,27 @@ class _QuestionnaireScreenState extends State<QuestionnaireScreen> {
                   ),
                 );
               },
-              child: const Text('Submit'),
+              child: const Text('Submit', style: TextStyle(fontSize: 18, color: Colors.white)),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildOptionButton(int index, String text) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: answers[index] == text ? const Color(0xFF778866) : Colors.white,
+        foregroundColor: Colors.black,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      onPressed: () {
+        setState(() {
+          answers[index] = text;
+        });
+      },
+      child: Text(text),
     );
   }
 }
