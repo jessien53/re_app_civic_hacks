@@ -17,3 +17,22 @@ class Question {
     );
   }
 }
+
+class YesNoQuestion extends Question {
+  YesNoQuestion({
+    required String text,
+    required String correctAnswer,
+  }) : super(
+    text: text,
+    options: ['Yes', 'No'],
+    correctAnswer: correctAnswer,
+  );
+
+  // Add a fromJson method for YesNoQuestion
+  factory YesNoQuestion.fromJson(Map<String, dynamic> json) {
+    return YesNoQuestion(
+      text: json['question'],
+      correctAnswer: json['correctAnswer'],
+    );
+  }
+}
