@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:re/screens/reduce_screen.dart';
 import 'user.dart';
 
 User user = User();
@@ -76,48 +77,79 @@ class _PrimaryScreenState extends State<PrimaryScreen> {
               const SizedBox(height: 40),
 
               // Buttons with doubled size
-              GestureDetector(
-                onTap: () {
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ReduceScreen()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  shape: const CircleBorder(),
+                  padding: EdgeInsets.zero, // Remove extra padding
+                  backgroundColor: Colors.transparent, // Make background transparent
+                  shadowColor: Colors.transparent, // Remove shadow
+                ),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/1.png',
+                    width: 160,  // Adjust size as needed
+                    height: 160,
+                    fit: BoxFit.cover, // Ensures the image fills the button properly
+                  ),
+                ),
+              ),
+
+
+              const SizedBox(height: 20),
+
+              ElevatedButton(
+                onPressed: () {
                   setState(() {
                     user.addPoints(1);
                   });
                 },
-                child: SizedBox(
-                  width: 160, // Doubled size
-                  height: 160,
-                  child: Image.asset('assets/1.png', fit: BoxFit.cover),
+                style: ElevatedButton.styleFrom(
+                  shape: const CircleBorder(),
+                  padding: EdgeInsets.zero, // Remove extra padding
+                  backgroundColor: Colors.transparent, // Make background transparent
+                  shadowColor: Colors.transparent, // Remove shadow
+                ),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/2.png',
+                    width: 160,  // Adjust size as needed
+                    height: 160,
+                    fit: BoxFit.cover, // Ensures the image fills the button properly
+                  ),
                 ),
               ),
+
 
               const SizedBox(height: 20),
 
-              GestureDetector(
-                onTap: () {
+              ElevatedButton(
+                onPressed: () {
                   setState(() {
-                    user.addPoints(2);
+                    user.addPoints(1);
                   });
                 },
-                child: SizedBox(
-                  width: 160,
-                  height: 160,
-                  child: Image.asset('assets/2.png', fit: BoxFit.cover),
+                style: ElevatedButton.styleFrom(
+                  shape: const CircleBorder(),
+                  padding: EdgeInsets.zero, // Remove extra padding
+                  backgroundColor: Colors.transparent, // Make background transparent
+                  shadowColor: Colors.transparent, // Remove shadow
+                ),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/3.png',
+                    width: 160,  // Adjust size as needed
+                    height: 160,
+                    fit: BoxFit.cover, // Ensures the image fills the button properly
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 20),
-
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    user.addPoints(3);
-                  });
-                },
-                child: SizedBox(
-                  width: 160,
-                  height: 160,
-                  child: Image.asset('assets/3.png', fit: BoxFit.cover),
-                ),
-              ),
             ],
           ),
         ),

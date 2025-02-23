@@ -32,12 +32,14 @@ class Event {
   }
 }
 
-class SustainabilityEventsScreen extends StatefulWidget {
+class ReduceScreen extends StatefulWidget {
+  const ReduceScreen({super.key});
+
   @override
   _SustainabilityEventsScreenState createState() => _SustainabilityEventsScreenState();
 }
 
-class _SustainabilityEventsScreenState extends State<SustainabilityEventsScreen> {
+class _SustainabilityEventsScreenState extends State<ReduceScreen> {
   late Future<List<Event>> futureEvents;
   late List<CameraDescription> cameras;
   late CameraController cameraController;
