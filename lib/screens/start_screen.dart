@@ -18,7 +18,9 @@ class StartScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const QuestionnaireScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const QuestionnaireScreen(),
+                  ),
                 );
               },
               child: const Text('Start'),

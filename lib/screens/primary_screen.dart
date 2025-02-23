@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:re/screens/reduce_screen.dart';
 import 'user.dart';
+import 'reuse_screen.dart';
 
 User user = User();
 
@@ -105,9 +106,10 @@ class _PrimaryScreenState extends State<PrimaryScreen> {
 
               ElevatedButton(
                 onPressed: () {
-                  setState(() {
-                    user.addPoints(1);
-                  });
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ReuseScreen()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   shape: const CircleBorder(),
