@@ -4,6 +4,7 @@ import 'question_model.dart';
 import 'gemini_service.dart';
 import 'user.dart';
 import 'primary_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 User user = User();
 
@@ -158,8 +159,11 @@ class ReuseScreenState extends State<ReuseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFEAE7DC),
       appBar: AppBar(
         title: const Text('Reuse Trivia'),
+        backgroundColor: const Color(0xFF52734D), // Earthy green
+        elevation: 0,
         actions: [
           Center(
             child: Padding(
@@ -197,6 +201,9 @@ class ReuseScreenState extends State<ReuseScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _loadNextQuestion,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[600],  // Muted green button
+              ),
               child: const Text('Try Again'),
             ),
           ],
@@ -213,10 +220,13 @@ class ReuseScreenState extends State<ReuseScreen> {
       children: [
         Text(
           'Question $_questionCount of $_maxQuestions',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown),
         ),
         const SizedBox(height: 20),
-        Text(_currentQuestion!.text, style: const TextStyle(fontSize: 20)),
+        Text(
+          _currentQuestion!.text,
+          style: TextStyle(fontSize: 20, color: Colors.green[800]),  // Muted green text
+        ),
         const SizedBox(height: 20),
         // Display options (either multiple choice or Yes/No)
         ..._currentQuestion!.options.map(
@@ -227,10 +237,13 @@ class ReuseScreenState extends State<ReuseScreen> {
               _selectedAnswer != null ? null : () => _handleAnswer(option),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _getButtonColor(option),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),  // Rounded corners
+                ),
               ),
               child: Text(
                 option,
-                style: TextStyle(color: _getTextColor(option)),
+                style: TextStyle(color: Colors.white),
               ),
             ),
           ),
@@ -251,6 +264,12 @@ class ReuseScreenState extends State<ReuseScreen> {
         if (_selectedAnswer != null)
           ElevatedButton(
             onPressed: _loadNextQuestion,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green[700],  // Earth-tone button color
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),  // Rounded corners
+              ),
+            ),
             child: Text(
               _questionCount >= _maxQuestions ? 'See Results' : 'Next Question',
             ),
@@ -260,10 +279,10 @@ class ReuseScreenState extends State<ReuseScreen> {
   }
 
   Color _getButtonColor(String option) {
-    if (_selectedAnswer == null) return Colors.blue;
-    if (option == _currentQuestion!.correctAnswer) return Colors.green;
+    if (_selectedAnswer == null) return const Color(0xFF88AB8E); // Muted green
+    if (option == "Repurpose into planters") return Colors.green;
     if (option == _selectedAnswer) return Colors.red;
-    return Colors.blue;
+    return const Color(0xFF88AB8E);
   }
 
   Color _getTextColor(String option) {
