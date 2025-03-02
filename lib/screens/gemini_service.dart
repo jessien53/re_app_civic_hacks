@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'dart:typed_data';
 
 class GeminiService {
   final String _apiKey;
   final String _baseUrl =
       'https://generativelanguage.googleapis.com/v1beta/models/';
-  final String _model = 'gemini-pro';
+  final String _model = 'gemini-2.0-flash';
 
   GeminiService() : _apiKey = dotenv.get('GEMINI_API_KEY');
 
@@ -96,6 +98,74 @@ class GeminiService {
     } catch (e) {
       print('Error generating question: $e');
       throw Exception('Failed to generate question: $e');
+    }
+  }
+
+
+  Future<String> imageToBase64(String assetPath) async {
+    // Read the bytes directly from the asset
+    final bytes = await rootBundle.load(assetPath);
+    final Uint8List uint8List = bytes.buffer.asUint8List();
+    // Convert to base64
+    return base64Encode(uint8List);
+  }
+
+  Future<String> is_recyclable(String assetPath, {bool isYesNo = false}) async {
+    final url = '$_baseUrl$_model:generateContent?key=$_apiKey';
+    final headers = {'Content-Type': 'application/json'};
+
+    // Convert asset image to base64
+    final String base64Image = await imageToBase64(assetPath);
+
+    final body = jsonEncode({
+      "contents": [
+        {
+          "parts": [
+            {"text": "Is this item recyclable? Please respond with only Yes or No."},
+            {
+              "inlineData": {
+                "mimeType": "image/jpeg",
+                "data": base64Image
+              }
+            }
+          ],
+        },
+      ],
+      "generationConfig": {
+        "temperature": 0.7,
+        "topK": 40,
+        "topP": 0.8,
+        "maxOutputTokens": 1024,
+      },
+    });
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        String generatedText = data['candidates'][0]['content']['parts'][0]['text'].trim().toLowerCase();
+
+        // Return simple Yes/No response
+        if (generatedText.contains('yes')) {
+          return 'Yes';
+        } else if (generatedText.contains('no')) {
+          return 'No';
+        } else {
+          return 'Unclear';
+        }
+      } else {
+        print('Request failed with status: ${response.statusCode}.');
+        print('Response body: ${response.body}');
+        throw Exception('Failed to analyze image');
+      }
+    } catch (e) {
+      print('Error analyzing image: $e');
+      throw Exception('Failed to analyze image: $e');
     }
   }
 }

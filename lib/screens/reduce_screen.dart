@@ -1,33 +1,33 @@
-import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
-import 'package:confetti/confetti.dart';
-import 'package:opencv_4/opencv_4.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:re/screens/primary_screen.dart';
+import 'user.dart';
 
-// Event data model
+User user = User();
+
 class Event {
   final String id;
   final String title;
   final String description;
-  final String imageUrl;
+  final String startDate;
+  bool isConfirmed;
 
   Event({
     required this.id,
     required this.title,
     required this.description,
-    required this.imageUrl,
+    required this.startDate,
+    this.isConfirmed = false,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
-      id: json['id'],
-      title: json['name']['text'] ?? 'No Title',
-      description: json['description']['text'] ?? 'No Description',
-      imageUrl: json['logo'] != null ? json['logo']['url'] : 'https://via.placeholder.com/150',
+      id: json['id'].toString(),
+      title: json['title'] ?? 'No Title',
+      description: json['description'] ?? 'No Description Available',
+      startDate: json['date'] ?? 'Unknown Date',
     );
   }
 }
@@ -36,154 +36,164 @@ class ReduceScreen extends StatefulWidget {
   const ReduceScreen({super.key});
 
   @override
-  _SustainabilityEventsScreenState createState() => _SustainabilityEventsScreenState();
+  _ReduceScreenState createState() => _ReduceScreenState();
 }
 
-class _SustainabilityEventsScreenState extends State<ReduceScreen> {
+class _ReduceScreenState extends State<ReduceScreen> {
   late Future<List<Event>> futureEvents;
-  late List<CameraDescription> cameras;
-  late CameraController cameraController;
-  late ConfettiController confettiController;
-  bool isCameraInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    futureEvents = fetchEvents();
-    confettiController = ConfettiController(duration: const Duration(seconds: 2));
-    initializeCamera();
+    futureEvents = fetchSustainabilityEvents();
   }
 
-  Future<List<Event>> fetchEvents() async {
-    const String apiUrl = 'https://www.eventbriteapi.com/v3/events/search/';
-    const String token = 'YOUR_EVENTBRITE_API_TOKEN'; // Replace with your Eventbrite API token
-    final response = await http.get(
-      Uri.parse('$apiUrl?q=sustainability&sort_by=date&location.address=Boston&location.within=50mi'),
-      headers: {'Authorization': 'Bearer $token'},
-    );
+  Future<List<Event>> fetchSustainabilityEvents() async {
+    final String apiKey = dotenv.get('GEMINI_API_KEY');
+    final String baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/';
+    final String model = 'gemini-2.0-flash';
+    final String url = '$baseUrl$model:generateContent?key=$apiKey';
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      final List eventsJson = data['events'];
-      return eventsJson.take(3).map((json) => Event.fromJson(json)).toList();
-    } else {
-      throw Exception('Failed to load events');
-    }
-  }
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({
+      "contents": [
+        {
+          "parts": [
+            {
+              "text": "Provide a valid JSON array of 15 upcoming sustainability events in 2025. "
+                  "Ensure the response is a valid JSON array without markdown formatting. Each event must include 'id', 'title', 'description', and 'date'."
+            }
+          ]
+        }
+      ],
+      "generationConfig": {
+        "temperature": 0.7,
+        "topK": 40,
+        "topP": 0.8,
+        "maxOutputTokens": 1024
+      }
+    });
 
-  Future<void> initializeCamera() async {
-    cameras = await availableCameras();
-    cameraController = CameraController(cameras.first, ResolutionPreset.medium);
-    await cameraController.initialize();
-    if (!mounted) return;
-    setState(() => isCameraInitialized = true);
-  }
-
-  void capturePhoto(Event event) async {
-    if (!isCameraInitialized) return;
-    final image = await cameraController.takePicture();
-    processImage(image.path, event);
-  }
-
-  Future<void> processImage(String imagePath, Event event) async {
     try {
-      // Ensure OpenCV has access to the image path
-      Uint8List? processedImage = await Cv2.cvtColor(
-          pathString: imagePath,
-          outputType: Cv2.COLOR_BGR2GRAY // Correct OpenCV constant
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
       );
 
-      if (processedImage != null) {
-        bool isValid = await verifyImage(processedImage, event);
-        setState(() {});
-        if (isValid) {
-          confettiController.play();
-          showSnackBar("Event verified! 🎉", true);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        if (data['candidates'] == null || data['candidates'].isEmpty) {
+          throw Exception("No candidates returned from API.");
+        }
+
+        String generatedText = data['candidates'][0]['content']['parts'][0]['text'].trim();
+        generatedText = generatedText.replaceAll(RegExp(r'```json|```'), '').trim();
+
+        // Extract only valid JSON array
+        final startIndex = generatedText.indexOf('[');
+        final endIndex = generatedText.lastIndexOf(']');
+        if (startIndex != -1 && endIndex != -1) {
+          generatedText = generatedText.substring(startIndex, endIndex + 1);
         } else {
-          showSnackBar("Image does not match the event 😔", false);
+          throw Exception("Invalid JSON structure in AI response. Could not extract valid array.");
+        }
+
+        try {
+          final jsonObject = jsonDecode(generatedText);
+          if (jsonObject is List) {
+            return jsonObject.map((event) => Event.fromJson(event)).toList();
+          } else {
+            throw Exception("Unexpected JSON format. Expected an array but received a different structure.");
+          }
+        } catch (e) {
+          throw Exception("Invalid JSON format from AI response: $e \nRaw Response: $generatedText");
         }
       } else {
-        showSnackBar("Error processing image 😔", false);
+        throw Exception('Failed to load events: ${response.statusCode}');
       }
     } catch (e) {
-      showSnackBar("Error: $e", false);
+      throw Exception('Error fetching events: $e');
     }
-  }
-
-
-
-  Future<bool> verifyImage(Uint8List imgData, Event event) async {
-    // Placeholder for real image verification logic
-    return imgData.isNotEmpty; // Simplified check (replace with real verification)
-  }
-
-  void showSnackBar(String message, bool success) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(success ? Icons.celebration : Icons.warning,
-                color: success ? Colors.green : Colors.red),
-            SizedBox(width: 8),
-            Text(message),
-          ],
-        ),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    cameraController.dispose();
-    confettiController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Sustainability Events')),
+      appBar: AppBar(
+        title: Text('Sustainability Events'),
+        automaticallyImplyLeading: false,
+      ),
       body: FutureBuilder<List<Event>>(
         future: futureEvents,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(child: Text('No events available.'));
           }
-
-          return Stack(
-            children: [
-              ListView.builder(
-                itemCount: snapshot.data!.length,
-                itemBuilder: (context, index) {
-                  final event = snapshot.data![index];
-                  return Card(
-                    margin: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                    child: ListTile(
-                      leading: Image.network(event.imageUrl, width: 50, height: 50, fit: BoxFit.cover),
-                      title: Text(event.title, style: TextStyle(fontWeight: FontWeight.bold)),
-                      subtitle: Text(event.description),
-                      trailing: IconButton(
-                        icon: Icon(Icons.camera_alt),
-                        onPressed: () => capturePhoto(event),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              Align(
-                alignment: Alignment.center,
-                child: ConfettiWidget(
-                  confettiController: confettiController,
-                  blastDirectionality: BlastDirectionality.explosive,
-                  shouldLoop: false,
+          return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              final event = snapshot.data![index];
+              return Card(
+                margin: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                child: ListTile(
+                  leading: Icon(
+                    Icons.circle,
+                    color: event.isConfirmed ? Colors.green : Colors.red,
+                    size: 20,
+                  ),
+                  title: Text(
+                    event.title,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    event.startDate,
+                    style: TextStyle(color: Colors.grey[700]),
+                  ),
+                  trailing: ElevatedButton(
+                    onPressed: () {
+                      user.addPoints(10);
+                      setState(() {
+                        event.isConfirmed = !event.isConfirmed;
+                      });
+                    },
+                    child: Text(event.isConfirmed ? "Confirmed" : "Confirm"),
+                  ),
                 ),
-              ),
-            ],
+              );
+            },
           );
         },
+      ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.all(12),
+        color: Colors.green,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+          ),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => PrimaryScreen()),
+            ); // Return to previous screen
+          },
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Text(
+              "Home",
+              style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ),
       ),
     );
   }

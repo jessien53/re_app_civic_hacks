@@ -59,6 +59,8 @@ class StartScreenState extends State<StartScreen> {
             ? Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            // Add logo assets/Re.
+
             // Sign-in area
             Container(
               padding: const EdgeInsets.all(20),

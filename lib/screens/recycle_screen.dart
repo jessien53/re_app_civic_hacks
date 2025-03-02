@@ -24,6 +24,9 @@ class RecycleScreenState extends State<RecycleScreen> {
   ];
 
   late final GeminiService _geminiService;
+  String? _recycleResult;
+  bool _showResultPopup = false;
+
 
   Question? _currentQuestion;
   String? _selectedAnswer;
@@ -93,6 +96,8 @@ class RecycleScreenState extends State<RecycleScreen> {
       });
     }
   }
+
+
 
   void _handleAnswer(String answer) {
     if (_currentQuestion == null || _selectedAnswer != null) return;
@@ -260,9 +265,82 @@ class RecycleScreenState extends State<RecycleScreen> {
               _questionCount >= _maxQuestions ? 'See Results' : 'Next Question',
             ),
           ),
+
+        // --- START NEW CODE ---
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
+          child: ElevatedButton(
+            onPressed: () async {
+              setState(() => _showResultPopup = false);
+              try {
+                final result = await _geminiService.is_recyclable('IMG_6370.JPG');
+                setState(() {
+                  _recycleResult = result;
+                  _showResultPopup = true;
+                });
+              } catch (e) {
+                setState(() => _recycleResult = 'Error analyzing image');
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: const Text(
+              'Check if Recyclable',
+              style: TextStyle(fontSize: 16),
+            ),
+          ),
+        ),
+        // Animated result popup
+        if (_recycleResult != null)
+          AnimatedOpacity(
+            duration: Duration(milliseconds: 500),
+            opacity: _showResultPopup ? 1.0 : 0.0,
+            child: Container(
+              margin: EdgeInsets.all(20),
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _recycleResult == 'Yes' ? Colors.green.shade100 : Colors.red.shade100,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  )
+                ],
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    _recycleResult == 'Yes' ? Icons.check_circle : Icons.cancel,
+                    color: _recycleResult == 'Yes' ? Colors.green : Colors.red,
+                    size: 50,
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    'This item is ${_recycleResult == 'Yes' ? 'recyclable' : 'not recyclable'}',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: _recycleResult == 'Yes' ? Colors.green.shade700 : Colors.red.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
+
     );
   }
+
+
+
+
 
   Color _getButtonColor(String option) {
     if (_selectedAnswer == null) return Colors.blue;
