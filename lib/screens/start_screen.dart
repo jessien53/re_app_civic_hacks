@@ -60,7 +60,11 @@ class StartScreenState extends State<StartScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Add logo assets/Re.
-
+            Image.asset(
+              'assets/Re.png',
+              height: 100,
+              fit: BoxFit.contain,
+            ),
             // Sign-in area
             Container(
               padding: const EdgeInsets.all(20),
